@@ -158,3 +158,20 @@ Branch pthread created:
 
 
 05mar2012 - Single change to test repo
+
+Error in compile gcc 4.5
+libtool: link: /home/mike/gcc-4.5.3/host-x86_64-unknown-linux-gnu/gcc/gcj -B/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava/ -B/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava/ -B/home/mike/gcc-4.5.3/host-x86_64-unknown-linux-gnu/gcc/ -B/usr/local/x86_64-unknown-linux-gnu/bin/ -B/usr/local/x86_64-unknown-linux-gnu/lib/ -isystem /usr/local/x86_64-unknown-linux-gnu/include -isystem /usr/local/x86_64-unknown-linux-gnu/sys-include -m32 -ffloat-store -fomit-frame-pointer -g -O2 -m32 -m32 -o .libs/jv-convert --main=gnu.gcj.convert.Convert -shared-libgcc  -L/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava/.libs -L/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava ./.libs/libgcj.so -lpthread -lrt -ldl -Wl,-rpath -Wl,/usr/local/lib/../lib
+./.libs/libgcj.so: undefined reference to `__cxa_call_unexpected'
+collect2: ld returned 1 exit status
+make[5]: *** [jv-convert] Error 1
+make[5]: Leaving directory `/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava'
+make[4]: *** [all-recursive] Error 1
+make[4]: Leaving directory `/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/32/libjava'
+make[3]: *** [multi-do] Error 1
+make[3]: Leaving directory `/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/libjava'
+make[2]: *** [all-multi] Error 2
+make[2]: Leaving directory `/home/mike/gcc-4.5.3/x86_64-unknown-linux-gnu/libjava'
+make[1]: *** [all-target-libjava] Error 2
+make[1]: Leaving directory `/home/mike/gcc-4.5.3'
+make: *** [all] Error 2
+You have new mail in /var/spool/mail/mike

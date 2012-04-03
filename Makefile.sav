@@ -46,7 +46,7 @@ searchtable_v7.o : $(deps)
 
 $(objdir)table_utils.o : $(deps)
 $(objdir)freduce.o : $(deps)
-$(objdir)fname_gen : $(deps)
+$(objdir)fname_gen.o : $(deps)
 $(objdir)md5.o : $(deps)
 
 .PHONY : clean run

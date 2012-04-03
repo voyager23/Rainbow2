@@ -125,8 +125,6 @@ int sort_table(TableHeader *header,TableEntry *entry) {
 	return(0);
 }
 
-//==============================================================================
-
 //========================Hash_Calculate kernel=================================
 
 void *subchain_hash_thread(void *pthread_arg) {
@@ -138,7 +136,7 @@ void *subchain_hash_thread(void *pthread_arg) {
 */
 	PthreadData *mydata;
 	mydata = (PthreadData*)pthread_arg;
-	TableHeader *header = mydata->header;
+	// TableHeader *header = mydata->header;
 	TableEntry  *entry  = mydata->entry;
 	uint thread_idx = mydata->entry_idx;	
 	
@@ -229,6 +227,8 @@ void *subchain_hash_thread(void *pthread_arg) {
 		data->sublinks = thread_idx;
 
 	} // if(thread_idx<LINKS)
+	void *void_ptr=NULL;
+	return(void_ptr);
 } // hash_calculate
 
 //=================================Main Code==================================
@@ -279,8 +279,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	// ----------allocate space for subchain tables----------
-
-	subchain_entry  = (TableEntry*)malloc(sizeof(TableEntry) * header->links);
+	subchain_entry  = (TableEntry*)malloc(sizeof(TableEntry) * LINKS);
 	
 	subchain_header = (TableHeader*)malloc(sizeof(TableHeader));
 	

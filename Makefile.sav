@@ -1,21 +1,24 @@
 # Makefile 24Jan2012
 
-objects =  table_utils.o freduce.o fname_gen.o md5.o
+objdir = ./obj/
+bindir = ./bin/
+
+objects =  $(objdir)table_utils.o $(objdir)freduce.o $(objdir)fname_gen.o md5.o
 deps = rainbow.h table_utils.h freduce.h fname_gen.h md5.h
 
-all : cmaketab csearch7 csearch6
+all : cmaketab csearch7 csearch6 thisto
 
-cmaketab : maketable_v7.o $(objects)
-	gcc -pthread -o cmaketab -lm maketable_v7.o $(objects)
+cmaketab : $(objdir)maketable_v7.o $(objects)
+	gcc -pthread -o $(bindir)cmaketab -lm $(objdir)maketable_v7.o $(objects)
 
-csearch6 : searchtable_v6.o $(objects)
-	gcc -pthread -o csearch6 -lm searchtable_v6.o $(objects)
+csearch6 : $(objdir)searchtable_v6.o $(objects)
+	gcc -pthread -o $(bindir)csearch6 -lm $(objdir)searchtable_v6.o $(objects)
 	
-csearch7 : searchtable_v7.o $(objects)
-	gcc -Wall -pthread -o csearch7 -lm searchtable_v7.o $(objects)
+csearch7 : $(objdir)searchtable_v7.o $(objects)
+	gcc -Wall -pthread -o $(bindir)csearch7 -lm $(objdir)searchtable_v7.o $(objects)
 
-thisto : thisto.o $(objects)
-	gcc -Wall -o thisto -lm thisto.c $(objects)
+thisto : $(objects)
+	gcc -Wall -o $(bindir)thisto -lm thisto.c $(objects)
 
 #------------------------------------------------------------
 csearch4 : searchtable_v4.o $(objects)
@@ -41,10 +44,10 @@ searchtable_v5.o : $(deps)
 searchtable_v6.o : $(deps)
 searchtable_v7.o : $(deps)
 
-table_utils.o : $(deps)
-freduce.o : $(deps)
-fname_gen : $(deps)
-md5.o : $(deps)
+$(objdir)table_utils.o : $(deps)
+$(objdir)freduce.o : $(deps)
+$(objdir)fname_gen.o : $(deps)
+$(objdir)md5.o : $(deps)
 
 .PHONY : clean run
 

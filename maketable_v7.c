@@ -36,6 +36,7 @@
 
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
@@ -43,6 +44,8 @@
 #include "md5.h"
 #include "rainbow.h"
 #include "table_utils.h"
+#include "freduce.h"
+#include "fname_gen.h"
 
 // Declarations
 void initHash(uint32_t *h);
@@ -66,7 +69,7 @@ typedef struct pthread_data {
 //============================================================================
 void table_setup(TableHeader *header, TableEntry *entry) {
 	int i,di;
-	unsigned int t_size=sizeof(TableHeader)+(sizeof(TableEntry)*DIMGRIDX*THREADS);
+	//unsigned int t_size=sizeof(TableHeader)+(sizeof(TableEntry)*DIMGRIDX*THREADS);
 
 	printf("Table Setup\nLinks: %d Table_Size: %d entries\n",LINKS,T_ENTRIES);
 
@@ -141,13 +144,13 @@ int sort_table(TableHeader *header,TableEntry *entry) {
 }
 //=============================================================================== 
 void *chain_calc_thread(void *pthread_arg) {
+	
 	PthreadData *mydata;
 	mydata = (PthreadData*)pthread_arg;
-	TableHeader *header = mydata->header;
+	//TableHeader *header = mydata->header;
 	TableEntry  *entry  = mydata->entry;
 	int entry_idx = mydata->entry_idx;	
 	
-	//======================================================================================
 	uint8_t  M[64];	// Initial string - zero padded and length in bits appended
 	uint32_t W[64];	// Expanded Key Schedule
 	uint32_t H[8];	// Hash
@@ -259,8 +262,8 @@ int main(int argc, char** argv)
 #define SANITY (((DIMGRIDX*THREADS)>0)&&((DIMGRIDX*THREADS)%NUM_PTHREADS)==0)
 
 	PthreadData pthread_data_array[NUM_PTHREADS];
-	pthread_t prog;
-	void *exit_status;
+	//pthread_t prog;
+	//void *exit_status;
 	
 	FILE *sort;
 	char sort_file[81];
@@ -341,7 +344,7 @@ int main(int argc, char** argv)
 	// save sorted table to file
 	r1=fwrite(header,sizeof(TableHeader),1,sort);
 	r2=fwrite(entry,sizeof(TableEntry),header->entries,sort);
-	fsync(sort);
+	fflush(sort);	//TODO: Is this call required since fclose will flush buffers?
 	fclose(sort);
 	
 	// hand the sorted file to the tmerge function

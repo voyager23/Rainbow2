@@ -5,6 +5,8 @@ deps = rainbow.h table_utils.h freduce.h fname_gen.h md5.h
 
 find_obj = $(addprefix ./obj/, table_utils.o freduce.o fname_gen.o md5.o)
 
+all : cmaketab csearch
+
 csearch : $(find_obj)
 	gcc -Wall -pthread -lm  searchtable_v7.c $^ -o ./bin/$@
 

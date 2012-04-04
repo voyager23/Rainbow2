@@ -1,12 +1,6 @@
 /*	
 	* Performance testing version
-	* 30Jan2012
-	* This version (6) takes a single random pass/hash pair
-	* and consults multiple Rainbow Tables.
-	* Compiles to ./csearch6
-	* rsync -av /home/mike/wdir/Git/ /media/0CFC-8FF8/Git
-	* git bundle create repo.bundle master
-	* git clone repo.bundle -b master repo
+	* 04Apr2012
 	*
 */
 
@@ -235,13 +229,13 @@ void *subchain_hash_thread(void *pthread_arg) {
 
 int main(int argc, char **argv) {
 /*
-	* Performance testing 03Feb2012
-	* This version (6) takes a single random pass/hash pair
-	* and consults multiple Rainbow Tables.
-	* Executable: ./csearch6
+	* Version 7
+	* exec: csearch
+	* Selects and confirms a target
+	* Searches for known target
 */
 
-#define NUM_PTHREADS 4
+#define NUM_PTHREADS 8
 	// in this case assert (LINKS % NUM_PTHREADS)==0
 	if((LINKS%NUM_PTHREADS)!=0) {
 		printf("Sanity test in csearch6 failed.\n");

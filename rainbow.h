@@ -10,7 +10,7 @@
 	#define DIMGRIDX 128
 	// threads per block
 	#define THREADS  256
-	// Number of links in chain
+	// Number of links in chain - defining characteristic of table.
 	#define LINKS 2048
 	// limit password to MAXLENGTH chars
 	#define MAXLENGTH 63

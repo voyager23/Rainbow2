@@ -1,19 +1,12 @@
-/*
-	* Include code to modularise the reduction functions
-	* freduce.cu
-	* reduction functions for use by maketable and searchtable
-	*
-*/
+// filename: freduce.cu
+
 #include <stdint.h>
-//=======================================================================
-#ifdef __CUDA__ 
-__device__ 
-#endif
+
+//====================================================================== 
+__device__ __host__
 void reduce_hash(uint32_t H[], uint8_t B[], int link_idx);
-//=======================================================================
-#ifdef __CUDA__ 
-__device__ 
-#endif
+//======================================================================
+__device__ __host__
 void reduce_hash(uint32_t H[], uint8_t B[], int link_idx) {
 
 		uint32_t z;

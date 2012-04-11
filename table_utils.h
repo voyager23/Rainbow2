@@ -15,6 +15,7 @@
 	#include <string.h>
 	#include <endian.h>
 	#include <time.h>
+	
 
 	//=============================================================================
 	void show_table_header(TableHeader*);
@@ -25,5 +26,8 @@
 	int hash_compare_uint32_t(uint32_t *left, uint32_t *right);
 	int tmerge(char *sort,char *new_merge);
 	int get_rnd_table_entry(TableEntry*,FILE*);
+	void reduce_hash(uint32_t H[], uint8_t B[], int link_idx);
 	//=============================================================================
+
+
 #endif

@@ -13,10 +13,8 @@
 
 //===========================Include code======================================
 
-#include "md5.h"
+
 #include "rainbow.h"
-#include "table_utils.h"
-#include "fname_gen.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -24,6 +22,12 @@
 #include <string.h>
 #include <endian.h>
 #include <time.h>
+
+//=========================Declarations=================================
+__global__ void kernel(TableHeader *header, TableEntry *entry);
+
+
+
 
 static void HandleError( cudaError_t err,
                          const char *file,
@@ -34,6 +38,7 @@ static void HandleError( cudaError_t err,
         exit( EXIT_FAILURE );
     }
 }
+
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
 // Hash constants
@@ -46,112 +51,17 @@ __constant__	uint32_t k[64] = {
 	   0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
 	   0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
 	   0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2 };
+	   
+//=========================Include Device Code==========================
 
+#include "freduce.cu"
+#include "initHash.cu"
+#include "sha256_txfm.cu"
+#include "utils.cu"	   
 
-//==============Declarations==================================================
-void table_setup(TableHeader*,TableEntry*);
-__device__ void initHash(uint32_t *h);
-__device__ void sha256_transform(uint32_t *w, uint32_t *H);
-__global__ void hash_calculate(TableHeader *header, TableEntry *entry);
-//=============================================================================
+//=========================Kernel=======================================
 
-void table_setup(TableHeader *header, TableEntry *entry) {
-	int i,di;
-	unsigned int t_size=sizeof(TableHeader)+(sizeof(TableEntry)*DIMGRIDX*THREADS);
-
-	srand(time(NULL));
-	printf("Threads: %d Table_Size: %d\n",THREADS,t_size);
-	for(i=0; i<THREADS*DIMGRIDX; i++) {
-		// Random password type 'UUnnllU'
-		(entry+i)->initial_password[0]= (rand() % 26) + 'A';
-		(entry+i)->initial_password[1]= (rand() % 26) + 'A';
-		(entry+i)->initial_password[2]= (rand() % 10) + '0';
-		(entry+i)->initial_password[3]= (rand() % 10) + '0';
-		(entry+i)->initial_password[4]= (rand() % 26) + 'a';
-		(entry+i)->initial_password[5]= (rand() % 26) + 'a';
-		(entry+i)->initial_password[6]= (rand() % 26) + 'A';
-		(entry+i)->initial_password[7]= '\0';
-		// DEBUG
-		(entry+i)->final_hash[0] = 0x776f6272;
-	}
-	header->hdr_size = sizeof(TableHeader);
-	header->entries = THREADS*DIMGRIDX;
-	header->links = LINKS;
-	header->f1 =  rand()%1000000000;	// Table Index
-	header->f2 = 0x3e3e3e3e;			// '>>>>'
-	// Calculate the md5sum of the table entries
-	md5_state_t state;
-	md5_byte_t digest[16];
-	
-	md5_init(&state);
-	for(i=0; i<THREADS*DIMGRIDX; i++)
-		md5_append(&state, (const md5_byte_t *)&(entry[i]), sizeof(TableEntry));
-	md5_finish(&state, digest);
-
-	// print md5sum for test purposes
-	for (di = 0; di < 16; ++di)
-		printf("%02x", digest[di]);
-	printf("\n");
-
-	// Save the md5sum in check_sum slot
-	for (di = 0; di < 16; ++di)
-	    sprintf(header->check_sum + di * 2, "%02x", digest[di]);
-	*(header->check_sum + di * 2) = '\0';
-}
-
-//=========================Device Code=========================================
-
-__device__ void initHash(uint32_t *h) {
-	h[0] = 0x6a09e667;
-	h[1] = 0xbb67ae85;
-	h[2] = 0x3c6ef372;
-	h[3] = 0xa54ff53a;
-	h[4] = 0x510e527f;
-	h[5] = 0x9b05688c;
-	h[6] = 0x1f83d9ab;
-	h[7] = 0x5be0cd19;
-}
-//=============================================================================
-__device__ void sha256_transform(uint32_t *w, uint32_t *H) {
-	//working variables 32 bit words
-	int i;
-	uint32_t a,b,c,d,e,f,g,h,T1,T2;
-
-	a = H[0];
-	b = H[1];
-	c = H[2];
-	d = H[3];
-	e = H[4];
-	f = H[5];
-	g = H[6];
-	h = H[7];
-   
-   for (i = 0; i < 64; ++i) {  
-      T1 = h + EP1(e) + CH(e,f,g) + k[i] + w[i];
-      T2 = EP0(a) + MAJ(a,b,c);
-      h = g;
-      g = f;
-      f = e;
-      e = d + T1;
-      d = c;
-      c = b;
-      b = a;
-      a = T1 + T2;
-  }      
-    // compute single block hash value
-	H[0] += a;
-	H[1] += b;
-	H[2] += c;
-	H[3] += d;
-	H[4] += e;
-	H[5] += f;
-	H[6] += g;
-	H[7] += h;
-}
-
-//========================Hash_Calculate kernel=================================
-
-__global__ void hash_calculate(TableHeader *header, TableEntry *entry) {
+__global__ void kernel(TableHeader *header, TableEntry *entry) {
 /*
 	* revised 29Dec2011
 	* The parameter is the base address of a large table of TableEntry(s)
@@ -252,7 +162,7 @@ __global__ void hash_calculate(TableHeader *header, TableEntry *entry) {
 
 		__syncthreads();
 	} // if(thread_idx<LINKS)
-} // hash_calculate
+} // kernel
 
 //=================================Main Code==================================
 
@@ -265,12 +175,8 @@ int main(int argc, char **argv) {
 	TableEntry *entry, *dev_entry, *target, *check, *compare;
 	TableHeader *subchain_header;
 	TableEntry *subchain_entry;
-	int t,n,i,di,dx;
-	int link_index, solutions, collisions, found;
-	// output file
-	char cand_file[81];
-	FILE *cand;
-	uint32_t hash[8];
+	int i,di,dx;
+	int solutions, collisions;
 	
 	printf("searchtable_v4 (cuda).\n");
 	printf("Search a merged Rainbow Table for a selected password.\n");
@@ -298,7 +204,7 @@ int main(int argc, char **argv) {
 	// allocate space for subchain tables
 	subchain_header = (TableHeader*)malloc(sizeof(TableHeader));
 	subchain_entry  = (TableEntry*)malloc(sizeof(TableEntry)*LINKS);
-	if((header==NULL)||(entry==NULL)) {
+	if((subchain_header==NULL)||(subchain_entry==NULL)) {
 		printf("Error - searchtable_v3: Host memory allocation failed.\n");
 		exit(1);
 	}
@@ -313,9 +219,11 @@ int main(int argc, char **argv) {
 			(subchain_entry+i)->final_hash[di] = 0xffffffff;
 		}
 	}
+	
+	show_table_entries(subchain_entry,0,10);
 
 	// allocate device memory
-	// HANDLE_ERROR(cudaMalloc((void**)&dev_header,sizeof(TableHeader)));
+	HANDLE_ERROR(cudaMalloc((void**)&dev_header,sizeof(TableHeader)));
 	HANDLE_ERROR(cudaMalloc((void**)&dev_entry,sizeof(TableEntry)*LINKS));
 
 	// Copy entries to device
@@ -323,10 +231,13 @@ int main(int argc, char **argv) {
 
 	// launch kernel
 	printf("Launching %d blocks of %d threads\n",blocks,threads);
-	//hash_calculate<<<blocks,threads>>>(dev_header,dev_entry);
+	kernel<<<blocks,threads>>>(dev_header,dev_entry);
 
 	// copy entries to host
 	HANDLE_ERROR(cudaMemcpy(subchain_entry, dev_entry, sizeof(TableEntry)*LINKS, cudaMemcpyDeviceToHost));
+
+	show_table_entries(subchain_entry,0,10);
+
 
 	// Search Rainbow Table
 	// ----------now set up the Rainbow table----------
@@ -337,8 +248,7 @@ int main(int argc, char **argv) {
 	}
 	printf("Now looking for a valid solution\n");
 	// look for a valid solution
-	solutions=0; found=0;
-	while((n = fscanf(fp_tables,"%s",rbt_file)) != EOF) {
+	while((fscanf(fp_tables,"%s",rbt_file)) != EOF) {
 		fp_rbow = fopen(rbt_file,"r");
 		if(fp_rbow==NULL) {
 			printf("Error - unable to open %s\n",rbt_file);
@@ -358,7 +268,7 @@ int main(int argc, char **argv) {
 		// if match found - report chain_index and link_index.
 		printf("Looking for a matching chain...\n");
 		collisions=0;
-		
+		solutions=0;
 		check = (TableEntry*)malloc(sizeof(TableEntry)*(i+1));
 		
 		for(i=0;i<LINKS;i++) {				

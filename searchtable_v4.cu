@@ -67,6 +67,7 @@ __global__ void kernel(TableHeader *header, TableEntry *entry) {
 	* The parameter is the base address of a large table of TableEntry(s)
 	* Derived from table_calculate - given a target hash calculate a table
 	* of candidate hashes
+	* Algorithm takes input_hash and calculates final_hash and sublinks value.
 */
 
 	uint8_t  M[64];	// Initial string - zero padded and length in bits appended
@@ -189,17 +190,30 @@ int main(int argc, char **argv) {
 	// calculate number of blocks to launch
 	const int threads=THREADS;							// threads per block
 	const int blocks = (LINKS+THREADS-1)/threads;		// number of thread blocks
-	
+#if(0)	
 	// get test data - this is a known password/hash pair
 	target = (TableEntry*)malloc(sizeof(TableEntry));
 	srand(time(NULL));
 	fp_rbow = fopen("./rbt/RbowTab_merge.rbt","r");
 	get_rnd_table_entry(target, fp_rbow);
 	fclose(fp_rbow);
+	//Confirming selected target data.
+	//Password: VI21tdV
+	//Hash: 1b69ba30 d4c58d76 51d114fe c9f57390 73b5f0d4 84ee9870 f483f478 bce85866 
+#endif
+
+	// setup known solution for debug
+	// associated hash is loaded into "input_hash"
+	target->sublinks=0;
+	strcpy(target->initial_password, "VI21tdV");
+	hash2uint32("1b69ba30d4c58d7651d114fec9f5739073b5f0d484ee9870f483f478bce85866",
+				target->input_hash);
+	
 	// confirmation	of target
 	printf("\nSelected target data.\nPassword: %s\nHash: ", target->initial_password);
-	for(dx=0;dx<8;dx++) printf("%08x ", target->final_hash[dx]);
+	for(dx=0;dx<8;dx++) printf("%08x ", target->input_hash[dx]);
 	printf("\n");
+	
 
 	// allocate space for subchain tables
 	subchain_header = (TableHeader*)malloc(sizeof(TableHeader));

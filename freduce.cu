@@ -2,11 +2,15 @@
 
 #include <stdint.h>
 
-//====================================================================== 
+//======================================================================
+#ifdef __CUDA__ 
 __device__ __host__
+#endif
 void reduce_hash(uint32_t H[], uint8_t B[], int link_idx);
 //======================================================================
+#ifdef __CUDA__ 
 __device__ __host__
+#endif
 void reduce_hash(uint32_t H[], uint8_t B[], int link_idx) {
 
 		uint32_t z;

@@ -13,7 +13,6 @@
 
 //===========================Include code======================================
 
-
 #include "rainbow.h"
 
 #include <math.h>
@@ -24,10 +23,10 @@
 #include <time.h>
 
 //=========================Declarations=================================
-__global__ void kernel(TableHeader *header, TableEntry *entry);
-
-
-
+#ifdef __CUDA__
+__global__
+#endif
+void kernel(TableHeader *header, TableEntry *entry);
 
 static void HandleError( cudaError_t err,
                          const char *file,
@@ -42,7 +41,10 @@ static void HandleError( cudaError_t err,
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
 // Hash constants
-__constant__	uint32_t k[64] = {
+#ifdef __CUDA__
+__constant__
+#endif
+uint32_t k[64] = {
 	   0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
 	   0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
 	   0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
@@ -60,8 +62,10 @@ __constant__	uint32_t k[64] = {
 #include "utils.cu"	   
 
 //=========================Kernel=======================================
-
-__global__ void kernel(TableHeader *header, TableEntry *entry) {
+#ifdef __CUDA__
+__global__
+#endif
+void kernel(TableHeader *header, TableEntry *entry) {
 /*
 	* revised 29Dec2011
 	* The parameter is the base address of a large table of TableEntry(s)

@@ -16,10 +16,8 @@
 	#include <endian.h>
 	#include <time.h>
 	
-#ifdef __cplusplus
-extern "C" 
+extern "C"
 {
-#endif
 	//=============================================================================
 	void show_table_header(TableHeader*);
 	void show_table_entries(TableEntry*,int,int);
@@ -31,8 +29,6 @@ extern "C"
 	int get_rnd_table_entry(TableEntry*,FILE*);
 	void reduce_hash(uint32_t H[], uint8_t B[], int link_idx);
 	//=============================================================================
-#ifdef __cplusplus
-}  /* end extern "C" */
-#endif
+}
 
 #endif

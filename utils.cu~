@@ -9,6 +9,7 @@ int hash_compare_uint32_t(uint32_t *left, uint32_t *right);
 __host__
 void compute_chain(TableEntry *entry, int links);
 
+
 __host__
 int get_rnd_table_entry(TableEntry *target, FILE * fp) {
 	// target is pointer to a single TableEntry struct.

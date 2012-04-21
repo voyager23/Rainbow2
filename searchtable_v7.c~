@@ -372,9 +372,6 @@ int main(int argc, char **argv) {
 					for(dx=0;dx<8;dx++) printf("%08x ", (target)->final_hash[dx]);
 					// debug
 					printf("\nSolution chain starts %s\n",compare->initial_password);
-					printf("Final Hash is ");
-					for(dx=0;dx<8;dx++) printf("%08x ", (compare)->final_hash[dx]);
-					printf("\n");
 					// end debug
 					printf("\033[0m");
 					solutions++;
